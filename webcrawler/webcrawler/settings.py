@@ -25,7 +25,7 @@ SECRET_KEY = os.environ['SECRET_KEY']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DJANGO_DEBUG', '') != 'False'
 
-ALLOWED_HOSTS = ['ec2-18-209-61-174.compute-1.amazonaws.com']
+ALLOWED_HOSTS = ['hermenault.dev']
 
 
 # Application definition

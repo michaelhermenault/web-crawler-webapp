@@ -16,7 +16,7 @@ def initialize_crawl(request):
     url = json.loads(request.body).get("url")
     unique_id = str(uuid.uuid4())
     redis_client.publish("go-crawler-commands", url+","+unique_id)
-    return JsonResponse({"resultsURL": request.META['HTTP_HOST']+"/crawl/"+unique_id})
+    return JsonResponse({"resultsURL": "https://"+request.META['HTTP_HOST']+"/crawl/"+unique_id})
 
 
 @require_http_methods(["GET"])
