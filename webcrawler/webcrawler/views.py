@@ -16,7 +16,7 @@ def initialize_crawl(request):
     url = json.loads(request.body).get("url")
     unique_id = str(uuid.uuid4())
     redis_client.publish("go-crawler-commands", "{},{}".format(url, unique_id))
-    return JsonResponse({"resultsURL": build_results_link(request.META['HTTP_HOST'], unique_id, 0)})
+    return JsonResponse({"resultsURL": build_results_link(request.META['HTTP_HOST'], unique_id, 0)}, status=202)
 
 
 @ require_http_methods(["GET"])
@@ -35,7 +35,7 @@ def lookup_crawl(request, crawl_ID=None):
         results_list_key, start_index, redis_client.llen(results_list_key))
 
     if len(raw_results) == 0:
-        return JsonResponse({"message": "No results found"}, status=400)
+        return JsonResponse({"message": "No results found"}, status=404)
 
     results = [json.loads(v) for v in raw_results]
 
