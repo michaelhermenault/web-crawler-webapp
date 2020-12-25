@@ -15,18 +15,34 @@ def initialize_crawl(request):
 
     url = json.loads(request.body).get("url")
     unique_id = str(uuid.uuid4())
-    redis_client.publish("go-crawler-commands", url+","+unique_id)
-    return JsonResponse({"resultsURL": "https://"+request.META['HTTP_HOST']+"/crawl/"+unique_id})
+    redis_client.publish("go-crawler-commands", "{},{}".format(url, unique_id))
+    return JsonResponse({"resultsURL": build_results_link(request.META['HTTP_HOST'], unique_id, 0)})
 
 
-@require_http_methods(["GET"])
+@ require_http_methods(["GET"])
 def lookup_crawl(request, crawl_ID=None):
-    results_list_key = "go-crawler-results-" + crawl_ID
-    print(results_list_key)
+    start_string = request.GET.get("startIndex")
+    if start_string is None:
+        return JsonResponse({"message": "Must specify starting index"}, status=400)
+    try:
+        start_index = int(start_string)
+    except ValueError:
+        return JsonResponse({"message": "Invalid data type in query params"}, status=400)
+
+    results_list_key = "go-crawler-results-{}".format(crawl_ID)
 
     raw_results = redis_client.lrange(
-        results_list_key, 0, redis_client.llen(results_list_key))
-    #     structured_data = json.loads(str(message.get('data')))
+        results_list_key, start_index, redis_client.llen(results_list_key))
+
+    if len(raw_results) == 0:
+        return JsonResponse({"message": "No results found"}, status=400)
 
     results = [json.loads(v) for v in raw_results]
-    return JsonResponse({"result": results})
+
+    if results[-1].get('DoneMessage') is not None:
+        return JsonResponse({"edges": results})
+    return JsonResponse({"_links": {"next": {"href": build_results_link(request.META['HTTP_HOST'], crawl_ID, start_index+len(results))}}, "edges": results})
+
+
+def build_results_link(host, unique_id, start_index):
+    return "http://{}/crawl/{}?startIndex={}".format(host, unique_id, start_index)
