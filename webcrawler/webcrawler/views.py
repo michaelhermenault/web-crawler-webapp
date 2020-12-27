@@ -21,6 +21,7 @@ def initialize_crawl(request):
 
 @ require_http_methods(["GET"])
 def lookup_crawl(request, crawl_ID=None):
+    # Process query parameters
     start_string = request.GET.get("startIndex")
     if start_string is None:
         return JsonResponse({"message": "Must specify starting index"}, status=400)
@@ -29,6 +30,7 @@ def lookup_crawl(request, crawl_ID=None):
     except ValueError:
         return JsonResponse({"message": "Invalid data type in query params"}, status=400)
 
+    # Get redis list
     results_list_key = "go-crawler-results-{}".format(crawl_ID)
 
     raw_results = redis_client.lrange(
@@ -41,6 +43,8 @@ def lookup_crawl(request, crawl_ID=None):
     results = [json.loads(v) for v in raw_results]
 
     if results[-1].get('DoneMessage') is not None:
+        # Remove the 'DoneMessage' sentinel
+        results.pop()
         return JsonResponse({"edges": results})
     return JsonResponse({"_links": {"next": {"href": build_results_link(request.META['HTTP_HOST'], crawl_ID, start_index+len(results))}}, "edges": results})
 
