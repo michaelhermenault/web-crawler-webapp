@@ -34,8 +34,8 @@ def lookup_crawl(request, crawl_ID=None):
     raw_results = redis_client.lrange(
         results_list_key, start_index, redis_client.llen(results_list_key))
 
-    if len(raw_results) == 0:
-        return JsonResponse({"message": "No results found"}, status=404)
+    # if len(raw_results) == 0:
+    #     return JsonResponse({"message": "No results found"}, status=404)
 
     results = [json.loads(v) for v in raw_results]
 
