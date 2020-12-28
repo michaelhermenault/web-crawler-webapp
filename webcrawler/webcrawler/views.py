@@ -50,4 +50,4 @@ def lookup_crawl(request, crawl_ID=None):
 
 
 def build_results_link(host, unique_id, start_index):
-    return "http://{}/crawl/{}?startIndex={}".format(host, unique_id, start_index)
+    return "https://{}/crawl/{}?startIndex={}".format(host, unique_id, start_index)
